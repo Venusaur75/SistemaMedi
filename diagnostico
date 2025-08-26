@@ -1,0 +1,39 @@
+{
+  "resourceType": "DiagnosticReport",
+  "status": "final",
+  "code": { "coding": [{ "system": "http://loinc.org", "code": "58410-2", "display": "CBC panel - Blood by Automated count" }] },
+  "subject": { "reference": "Patient/123" },
+  "effectiveDateTime": "2025-08-15T10:00:00Z",
+  "result": [
+    { "reference": "Observation/hgb" },
+    { "reference": "Observation/hct" },
+    { "reference": "Observation/wbc" }
+  ]
+}
+{
+  "resourceType": "Observation",
+  "id": "hgb",
+  "status": "final",
+  "category": [{"coding":[{"system":"http://terminology.hl7.org/CodeSystem/observation-category","code":"laboratory"}]}],
+  "code": {"coding":[{"system":"http://loinc.org","code":"718-7","display":"Hemoglobin [Mass/volume] in Blood"}]},
+  "subject": {"reference":"Patient/123"},
+  "effectiveDateTime":"2025-08-15T10:00:00Z",
+  "valueQuantity":{"value":13.4,"unit":"g/dL","system":"http://unitsofmeasure.org","code":"g/dL"}
+}
+{ "dicomMetadata": { ... }, "srTID1500": { ... }, "task": "resumir e extrair medidas" }
+{
+  "examType": "XR|CT|MR",
+  "bodyRegion": "string",
+  "findings": [
+    {
+      "text": "string",
+      "radlex": ["RIDxxxx"],
+      "location": "string",
+      "measurements": [{"name":"string","value":0,"unit":"mm"}],
+      "confidence": 0.0
+    }
+  ],
+  "impression": ["string"],
+  "limitations": ["string"]
+}
+"scores": { "birads": { "category": 3, "rationale": "..." } }
