@@ -1,3 +1,4 @@
+import json
 import pytest
 
 try:
@@ -46,3 +47,23 @@ def test_empty_zip(client):
     resp = client.post("/upload", files=files)
     assert resp.status_code == 400
     assert resp.json()["detail"] == "ZIP file is empty"
+
+
+def test_pdf_upload_returns_uuid_and_report(client, monkeypatch, tmp_path):
+    """Uploading a PDF should save files and return extraction result."""
+    monkeypatch.setattr(upload, "_extract_metadata", lambda ft, data: {})
+    monkeypatch.setattr(upload, "extract_fields", lambda data, ft: {"foo": "bar"})
+
+    # ensure storage path uses temporary directory
+    monkeypatch.setattr(upload, "Path", lambda p: tmp_path / p)
+
+    files = {"file": ("file.pdf", create_pdf_bytes(), "application/pdf")}
+    resp = client.post("/upload", files=files)
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["report"] == {"foo": "bar"}
+    uid = body["uuid"]
+    storage_dir = tmp_path / "storage" / uid
+    assert (storage_dir / "original.pdf").exists()
+    with open(storage_dir / "report.json") as f:
+        assert json.load(f) == {"foo": "bar"}

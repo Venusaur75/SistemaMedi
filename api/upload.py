@@ -1,6 +1,12 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
+import json
 import zipfile
 from io import BytesIO
+from pathlib import Path
+from uuid import uuid4
+
+from ocr.extractor import extract_fields
+
 try:
     from PIL import Image
 except Exception:  # pragma: no cover
@@ -89,4 +95,16 @@ async def upload(file: UploadFile = File(...)):
     if file_type == '' or file_type not in {'dicom', 'zip', 'pdf', 'png', 'jpg', 'jpeg'}:
         raise HTTPException(status_code=400, detail='File type not supported')
     metadata = _extract_metadata(file_type, data)
-    return {'type': file_type, 'size': size, 'metadata': metadata}
+
+    response = {'uuid': uuid4().hex, 'type': file_type, 'size': size, 'metadata': metadata}
+
+    if file_type in {'pdf', 'png', 'jpg', 'jpeg'}:
+        report = extract_fields(data, file_type)
+        storage_dir = Path('storage') / response['uuid']
+        storage_dir.mkdir(parents=True, exist_ok=True)
+        ext = file_type
+        (storage_dir / f'original.{ext}').write_bytes(data)
+        (storage_dir / 'report.json').write_text(json.dumps(report, ensure_ascii=False))
+        response['report'] = report
+
+    return response
