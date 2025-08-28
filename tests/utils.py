@@ -43,6 +43,46 @@ def create_pdf_bytes() -> bytes:
     return b"%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF"
 
 
+def create_report_pdf_bytes() -> bytes:
+    """Create a simple one-page PDF containing diagnostic text."""
+    lines = [
+        "Indicação: Dor no peito",
+        "Achados: Exame normal",
+        "Conclusão: Sem sinais",
+        "Data: 01/02/2023",
+    ]
+
+    def _escape(txt: str) -> str:
+        return txt.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+
+    content = "\n".join(lines)
+    content = _escape(content)
+    stream = f"BT /F1 12 Tf 50 750 Td ({content}) Tj ET"
+    length = len(stream.encode("latin-1"))
+
+    objects = [
+        "1 0 obj<< /Type /Catalog /Pages 2 0 R >>endobj",
+        "2 0 obj<< /Type /Pages /Kids [3 0 R] /Count 1 >>endobj",
+        "3 0 obj<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>endobj",
+        f"4 0 obj<< /Length {length} >>stream\n{stream}\nendstream\nendobj",
+        "5 0 obj<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>endobj",
+    ]
+
+    pdf = "%PDF-1.4\n"
+    offsets = []
+    for obj in objects:
+        offsets.append(len(pdf.encode("latin-1")))
+        pdf += obj + "\n"
+    xref_start = len(pdf.encode("latin-1"))
+
+    xref = "xref\n0 6\n0000000000 65535 f \n"
+    for off in offsets:
+        xref += f"{off:010} 00000 n \n"
+    trailer = "trailer<< /Size 6 /Root 1 0 R >>\nstartxref\n" + str(xref_start) + "\n%%EOF"
+
+    return (pdf + xref + trailer).encode("latin-1")
+
+
 def create_image_bytes(format: str = "PNG") -> bytes:
     """Create bytes for a simple image."""
     if Image is None:
