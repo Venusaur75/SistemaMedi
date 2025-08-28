@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>SistemaMedi - Upload de Exames</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #preview { max-width: 100%; margin-top: 10px; display: none; }
+        #response { background: #f0f0f0; padding: 10px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Upload de Exames</h1>
+    <form id="upload-form">
+        <input type="file" id="file-input" accept="image/*,.pdf,.zip,.dcm" />
+        <button type="submit">Enviar</button>
+    </form>
+    <img id="preview" alt="Pré-visualização" />
+    <pre id="response"></pre>
+    <script src="app.js"></script>
+</body>
+</html>
