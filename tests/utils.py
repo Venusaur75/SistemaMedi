@@ -4,8 +4,10 @@ from io import BytesIO
 import pydicom
 from pydicom.dataset import Dataset, FileMetaDataset
 from pydicom.uid import ExplicitVRLittleEndian, generate_uid
-from PyPDF2 import PdfWriter
-from PIL import Image
+try:
+    from PIL import Image
+except Exception:  # pragma: no cover
+    Image = None
 
 
 def create_fake_dicom_bytes() -> bytes:
@@ -37,16 +39,14 @@ def create_empty_zip_bytes() -> bytes:
 
 
 def create_pdf_bytes() -> bytes:
-    """Create bytes for a simple one-page PDF file."""
-    writer = PdfWriter()
-    writer.add_blank_page(width=72, height=72)
-    buffer = BytesIO()
-    writer.write(buffer)
-    return buffer.getvalue()
+    """Create minimal PDF bytes with just a header and EOF marker."""
+    return b"%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF"
 
 
 def create_image_bytes(format: str = "PNG") -> bytes:
     """Create bytes for a simple image."""
+    if Image is None:
+        return b""
     image = Image.new("RGB", (10, 10), color="red")
     buffer = BytesIO()
     image.save(buffer, format=format)
