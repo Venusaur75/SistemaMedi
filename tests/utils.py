@@ -1,9 +1,14 @@
 import zipfile
 from io import BytesIO
 
-import pydicom
-from pydicom.dataset import Dataset, FileMetaDataset
-from pydicom.uid import ExplicitVRLittleEndian, generate_uid
+try:
+    import pydicom
+    from pydicom.dataset import Dataset, FileMetaDataset
+    from pydicom.uid import ExplicitVRLittleEndian, generate_uid
+except Exception:  # pragma: no cover - optional dependency
+    pydicom = None
+    Dataset = FileMetaDataset = None
+    ExplicitVRLittleEndian = generate_uid = None
 try:
     from PIL import Image
 except Exception:  # pragma: no cover
@@ -12,6 +17,8 @@ except Exception:  # pragma: no cover
 
 def create_fake_dicom_bytes() -> bytes:
     """Generate a minimal valid DICOM file in memory."""
+    if pydicom is None:  # pragma: no cover - dependency not installed
+        return b""
     meta = FileMetaDataset()
     meta.MediaStorageSOPClassUID = generate_uid()
     meta.MediaStorageSOPInstanceUID = generate_uid()

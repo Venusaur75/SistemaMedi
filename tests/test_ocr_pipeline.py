@@ -12,7 +12,7 @@ try:  # ensure PyPDF2 exists for PDF handling
 except Exception:  # pragma: no cover
     pytest.skip("PyPDF2 not installed", allow_module_level=True)
 
-from .utils import create_report_pdf_bytes
+from .utils import create_report_pdf_bytes, create_pdf_bytes
 
 
 @pytest.fixture
@@ -37,3 +37,16 @@ def test_ocr_pipeline_pdf(client, tmp_path):
     storage_dir = tmp_path / "storage" / uid
     assert (storage_dir / "original.pdf").exists()
     assert (storage_dir / "report.json").exists()
+
+
+def test_ocr_pipeline_pdf_no_headers(client):
+    pdf_bytes = create_pdf_bytes()
+    files = {"file": ("plain.pdf", pdf_bytes, "application/pdf")}
+    resp = client.post("/upload", files=files)
+    assert resp.status_code == 200
+    body = resp.json()
+    report = body["report"]
+    assert report["indicacao"] is None
+    assert report["achados"] is None
+    assert report["conclusao"] is None
+    assert report["datas"] == []
